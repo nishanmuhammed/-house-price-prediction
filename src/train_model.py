@@ -9,7 +9,11 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_squared_error,
+    r2_score,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
@@ -191,43 +195,44 @@ model_path = MODEL_DIR / "house_price_model.pkl"
 joblib.dump(best_model, model_path)
 
 print(f"\nBest model: {best_model_name}")
-print(f"Saved model to: {model_path}")
-
+print(f"Best model path: {model_path}")
 
 # ============================================================
 # 10. CREATE ACTUAL VS PREDICTED VISUALIZATION
 # ============================================================
 
+print("\nGenerating actual vs predicted visualization...")
+
+# Generate predictions using the best trained model
 best_predictions = best_model.predict(X_test)
 
-plt.figure(figsize=(9, 6))
+# Create the chart
+fig, ax = plt.subplots(figsize=(10, 7))
 
-plt.scatter(y_test, best_predictions, alpha=0.65)
+ax.scatter(y_test, best_predictions, alpha=0.7, edgecolors="black", linewidths=0.4)
 
-# Reference line: predictions on this line are exact.
+# Reference line for perfect predictions
 lower = min(y_test.min(), best_predictions.min())
 upper = max(y_test.max(), best_predictions.max())
 
-plt.plot([lower, upper], [lower, upper], "r--", label="Perfect predictions")
+ax.plot([lower, upper], [lower, upper], linestyle="--", label="Perfect predictions")
 
-plt.xlabel("Actual House Price ($)")
-plt.ylabel("Predicted House Price ($)")
+ax.set_xlabel("Actual House Price ($)")
+ax.set_ylabel("Predicted House Price ($)")
+ax.set_title(f"Actual vs Predicted House Prices\nBest Model: {best_model_name}")
+ax.legend()
+ax.grid(True, alpha=0.3)
 
-plt.title(f"Actual vs Predicted House Prices\nBest Model: {best_model_name}")
+fig.tight_layout()
 
-plt.legend()
-plt.tight_layout()
+# Save the chart in the project root
+fig.savefig(CHART_PATH, dpi=200, bbox_inches="tight", facecolor="white")
 
-plt.savefig(CHART_PATH, dpi=150)
-plt.close()
+plt.close(fig)
 
-print(f"Evaluation chart saved to: {CHART_PATH}")
-
-
-# ============================================================
-# 11. FINISH
-# ============================================================
-
-print("\n" + "=" * 60)
-print("PROJECT TRAINING COMPLETED SUCCESSFULLY!")
-print("=" * 60)
+# Verify the file was saved
+if CHART_PATH.exists() and CHART_PATH.stat().st_size > 0:
+    print(f"Chart successfully saved: {CHART_PATH}")
+    print(f"Chart file size: {CHART_PATH.stat().st_size:,} bytes")
+else:
+    raise RuntimeError("The chart could not be saved.")
